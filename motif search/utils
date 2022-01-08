@@ -1,0 +1,61 @@
+import pandas as pd
+import numpy as np
+import math
+
+
+def get_proteins(file_path):
+    df = pd.read_csv(file_path, header=None)
+    data = np.array(df)[1:, 1:]
+    np.savetxt('./proteins.txt', data, fmt='%s', delimiter='')
+    protein_type = set()
+    for line in data:
+        for c in line:
+            protein_type.update(c)
+    return data, protein_type
+
+
+def build_background(protein_list, protein_type):
+    back_info = {}
+    for protein in protein_type:
+        back_info[protein] = 0
+
+    seq_num, seq_len = protein_list.shape[0], protein_list.shape[1]
+    proteins = protein_list.reshape(seq_num * seq_len)
+    # print(len(proteins))
+    unique, cnts = np.unique(proteins, return_counts=True)
+    dic = dict(zip(unique, cnts))
+    for key in back_info.keys():
+        if key in dic.keys():
+            back_info[key] = dic[key] / len(proteins)
+        else:
+            back_info[key] = 0.
+
+    return back_info
+
+
+def build_PSSM(motifs_list, protein_type):
+    """motifs_list is a np-like matrix"""
+    # init pssm
+    pssm = {}
+    for protein in protein_type:
+        pssm[protein] = []
+
+    for i in range(motifs_list.shape[1]):
+        curr_pos = motifs_list[:, i]
+        unique, cnts = np.unique(curr_pos, return_counts=True)
+        dic = dict(zip(unique, cnts))
+        for key in pssm.keys():
+            if key in dic.keys():
+                pssm[key].append(float(dic[key] / motifs_list.shape[0]))
+            else:
+                pssm[key].append(0.)
+
+    # normalization and logits
+    back_info = build_background(motifs_list, protein_type)
+    for key in pssm.keys():
+        pssm[key] = pssm[key] / back_info[key]
+        pssm[key][pssm[key] == 0] = 1e-10
+        pssm[key] = np.around(np.log10(pssm[key]), 2)
+
+    return pssm
+
