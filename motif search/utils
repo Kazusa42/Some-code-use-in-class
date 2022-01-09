@@ -6,7 +6,7 @@ import math
 def get_proteins(file_path):
     df = pd.read_csv(file_path, header=None)
     data = np.array(df)[1:, 1:]
-    np.savetxt('./proteins.txt', data, fmt='%s', delimiter='')
+    np.savetxt('./proteins.txt', data, fmt='%s', delimiter=' ')
     protein_type = set()
     for line in data:
         for c in line:
@@ -34,7 +34,10 @@ def build_background(protein_list, protein_type):
 
 
 def build_PSSM(motifs_list, protein_type):
-    """motifs_list is a np-like matrix"""
+    """
+    motifs_list: a np-like matrix
+    protein_type: alphabets shown in motif_list
+    """
     # init pssm
     pssm = {}
     for protein in protein_type:
@@ -59,3 +62,28 @@ def build_PSSM(motifs_list, protein_type):
 
     return pssm
 
+
+def dic_distance(dic1, dic2):
+    """ calculate the Euler distance between 2 dict """
+    distance = 0
+    for key in dic1.keys():
+        arr1 = dic1[key]
+        if key in dic2.keys():
+            arr2 = dic2[key]
+        else:
+            arr2 = np.zeros_like(arr1)
+        distance += np.linalg.norm(arr1 - arr2)
+
+    return distance
+
+
+def print_result(pssm, pi):
+    for i in range(len(pi)):
+        print(pi[i], end=' ')
+        if i and i % 20 == 0:
+            print('\n')
+
+    print('\n')
+    for key in pssm.keys():
+        print(key, end=': ')
+        print(pssm[key])
