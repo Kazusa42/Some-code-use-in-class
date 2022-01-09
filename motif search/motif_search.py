@@ -25,8 +25,8 @@ if __name__ == '__main__':
     for cnt in range(200):
         # print(cnt)
         # scan proteins and update ceta
-        score_matrix = np.zeros((seq_num, seq_len - MOTIF_LEN))
-        for pos in range(seq_len - MOTIF_LEN):
+        score_matrix = np.zeros((seq_num, seq_len - MOTIF_LEN + 1))
+        for pos in range(seq_len - MOTIF_LEN + 1):
             tmp_sublist = protein_list[:, pos:pos + MOTIF_LEN]
             # print(tmp_sublist.shape)
             for idx1 in range(seq_num):
@@ -42,7 +42,7 @@ if __name__ == '__main__':
         # update pssm
         for pos in range(MOTIF_LEN):
             # possibale protein type occur in this pos
-            poss = protein_list[:, pos:seq_len - MOTIF_LEN + pos]
+            poss = protein_list[:, pos:seq_len - MOTIF_LEN + pos + 1]
             # print(poss)
             for key in pssm.keys():  # key: current protein type
                 mask = np.where(poss == key, 1, 0)
